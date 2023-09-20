@@ -1,0 +1,75 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+ext {
+    generator = project.name
+    templates = 'templates'
+    services = [
+            new Service(name: 'Checkout', version: 70),
+            new Service(name: 'LegalEntity', version: 3),
+            new Service(name: 'Management', version: 1),
+            new Service(name: 'Transfer', version: 3),
+            new Service(name: 'BalancePlatform', version: 2),
+            new Service(name: 'POSTerminalManagement', spec: 'TfmAPI', version: 1),
+    ]
+    serviceName = ''
+}
+
+class Service {
+    String name, spec
+    int version
+
+    String getSpec() { spec ?: name }
+}
+
+// Generate a full client for each service
+project.ext.services.each { Service svc ->
+    tasks.register(svc.name.toLowerCase(), GenerateTask) {
+        description "Generate a $project.name client for $svc.name."
+
+        // Current service being processed
+        project.ext.serviceName = svc.name
+
+        generatorName.set(project.ext.generator as String)
+        inputSpec.set("$rootDir/schema/json/${svc.spec}Service-v${svc.version}.json")
+        outputDir.set("$buildDir/services/${svc.name.toLowerCase()}")
+        templateDir.set("$projectDir/$project.ext.templates")
+        validateSpec.set(false)
+        skipValidateSpec.set(true)
+        reservedWordsMappings.set([
+                "configuration": "configuration"
+        ])
+
+        if (project.ext.has('configFile')) {
+            configFile.set("$projectDir/$project.ext.configFile")
+        }
+    }
+}
+
+tasks.register('services') {
+    description 'Generate code for multiple services.'
+    dependsOn project.ext.services.collect { it.name.toLowerCase() }
+    dependsOn ':specs'
+}
+
+tasks.named('checkout', GenerateTask) {
+    inlineSchemaNameMappings.set([
+            'DonationPaymentRequest_paymentMethod': 'CheckoutPaymentMethod',
+            // For Go (old spec version?)
+            'PaymentDonationRequest_paymentMethod': 'CheckoutPaymentMethod'
+    ])
+}
+
+// Disable generator caching
+tasks.withType(GenerateTask).configureEach {
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+}
+
+tasks.register('clean', Delete) {
+    delete buildDir
+}

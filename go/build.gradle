@@ -1,0 +1,45 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id 'adyen.sdk-automation-conventions'
+}
+
+project.ext {
+    generator = 'go'
+    templates = 'templates/custom'
+    configFile = 'templates/config.yaml'
+}
+
+// Service renaming
+tasks.named('posterminalmanagement', GenerateTask) {
+    project.ext.serviceName = 'PosTerminalManagementApi'
+}
+
+tasks.withType(GenerateTask).configureEach {
+    globalProperties.set([
+            'apis'           : '',
+            'models'         : '',
+            'supportingFiles': 'client.go',
+            'apiTests'       : 'false',
+            'apiDocs'        : 'false',
+            'modelDocs'      : 'false'
+    ])
+    additionalProperties.set([
+            'serviceName': project.ext.serviceName,
+    ])
+}
+
+// Post-processing example
+tasks.named('checkout') {
+    doLast {
+        println 'Checkout models: ' + fileTree(dir: buildDir, include: 'services/checkout/model_*.go').files.size()
+        println 'Checkout services: ' + fileTree(dir: buildDir, include: 'services/checkout/api_*.go').files.size()
+    }
+}
+
+// Services with a RestServiceError model
+['balanceplatform', 'transfer', 'management'].each {
+    tasks.named(it, GenerateTask) {
+        additionalProperties.put('hasRestServiceError', 'true')
+    }
+}

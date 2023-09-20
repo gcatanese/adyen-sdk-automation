@@ -1,0 +1,31 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+def uri = "https://github.com/Adyen/adyen-openapi.git"
+def specsDir = "$projectDir/schema"
+
+tasks.register('specs', Exec) {
+    description 'Clone OpenAPI spec (and apply local patches).'
+    commandLine 'git', 'clone', '--depth', '1', uri, specsDir
+    outputs.dir specsDir
+    onlyIf { !file(specsDir).exists() }
+    doLast {
+        File folder = new File("$specsDir/json");
+        assert folder.exists()
+        assert folder.isDirectory()
+        assert folder.list().length > 0: "Folder cannot be empty after clone"
+        file(folder).eachFile { specFile ->
+            if (specFile.name.endsWith('.json')) {
+                def json = new JsonSlurper().parseText(specFile.text)
+                // Modify the 'openapi' field
+                json.openapi = '3.0.0'
+                // Overwrite the file with updated content
+                specFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))
+            }
+        }
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete specsDir
+}

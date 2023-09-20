@@ -1,0 +1,18 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id 'adyen.sdk-automation-conventions'
+}
+
+// Service renaming
+tasks.named 'legalentity', { project.ext.serviceName = 'LegalEntityManagement' }
+
+tasks.withType(GenerateTask).configureEach {
+    modelPackage.set("Model\\${project.ext.serviceName}")
+    apiPackage.set("Service\\${project.ext.serviceName}")
+    additionalProperties.set([
+            'variableNamingConvention': 'camelCase',
+            'invokerPackage'          : 'Adyen',
+            'packageName'             : 'Adyen'
+    ])
+}
