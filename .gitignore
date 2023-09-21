@@ -6,3 +6,6 @@ build
 
 # OpenAPI specs
 schema
+
+# SDK upstream repository
+repo

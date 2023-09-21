@@ -1,0 +1,8 @@
+plugins {
+    id 'adyen.sdk-automation-conventions'
+}
+
+project.ext {
+    generator = 'csharp-netcore'
+    templates = 'templates/csharp'
+}

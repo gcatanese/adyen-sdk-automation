@@ -1,0 +1,8 @@
+plugins {
+    id 'adyen.sdk-automation-conventions'
+}
+
+project.ext {
+    generator = 'typescript-node'
+    templates = 'templates/typescript'
+}
