@@ -16,3 +16,25 @@ tasks.withType(GenerateTask).configureEach {
             'packageName'             : 'Adyen'
     ])
 }
+
+// Deployment
+project.ext.services.each { Service svc ->
+    def deploy = tasks.register("deploy$svc.name", Copy) {
+        description "Copy $svc.name files into the repo."
+        dependsOn "generate$svc.name"
+
+        into layout.projectDirectory.dir("repo/src/Adyen")
+        def source = "services/$svc.id/lib"
+
+        from(layout.buildDirectory.dir(source)) {
+            include "Model/**/*.php"
+            include "Service/**/*.php"
+        }
+
+        from(layout.buildDirectory.file("$source/ObjectSerializer.php")) {
+            into "Model/$svc.name"
+        }
+    }
+
+    tasks.named(svc.id) { dependsOn deploy }
+}
