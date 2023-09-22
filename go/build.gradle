@@ -11,11 +11,13 @@ project.ext {
 }
 
 // Service renaming
-tasks.named('posterminalmanagement', GenerateTask) {
+tasks.named('generatePOSTerminalManagement', GenerateTask) {
     project.ext.serviceName = 'PosTerminalManagementApi'
 }
 
 tasks.withType(GenerateTask).configureEach {
+    packageName.set(it.name)
+    enablePostProcessFile.set(true)
     globalProperties.set([
             'apis'           : '',
             'models'         : '',
@@ -29,16 +31,21 @@ tasks.withType(GenerateTask).configureEach {
     ])
 }
 
-// Post-processing example
-tasks.named('checkout') {
-    doLast {
-        println 'Checkout models: ' + fileTree(dir: buildDir, include: 'services/checkout/model_*.go').files.size()
-        println 'Checkout services: ' + fileTree(dir: buildDir, include: 'services/checkout/api_*.go').files.size()
+// Deployment
+project.ext.services.each { Service svc ->
+    def deploy = tasks.register("deploy$svc.name", Copy) {
+        description "Copy $svc.name files into the repo."
+        dependsOn "generate$svc.name"
+        from layout.buildDirectory.dir("services/$svc.id")
+        include "**/*.go"
+        into layout.projectDirectory.dir("repo/src/$svc.id")
     }
+
+    tasks.named(svc.id) { dependsOn deploy }
 }
 
 // Services with a RestServiceError model
-['balanceplatform', 'transfer', 'management'].each {
+['generateBalancePlatform', 'generateTransfers', 'generateManagement'].each {
     tasks.named(it, GenerateTask) {
         additionalProperties.put('hasRestServiceError', 'true')
     }

@@ -12,9 +12,10 @@ ext {
             new Service(name: 'Checkout', version: 70),
             new Service(name: 'LegalEntity', version: 3),
             new Service(name: 'Management', version: 1),
-            new Service(name: 'Transfer', version: 3),
+            new Service(name: 'Transfers', spec: 'Transfer', version: 3),
             new Service(name: 'BalancePlatform', version: 2),
             new Service(name: 'POSTerminalManagement', spec: 'TfmAPI', version: 1),
+            new Service(name: 'DataProtection', version: 1),
     ]
     serviceName = ''
 }
@@ -24,20 +25,22 @@ class Service {
     int version
 
     String getSpec() { spec ?: name }
+    String getId() { name.toLowerCase() }
 }
 
 // Generate a full client for each service
 project.ext.services.each { Service svc ->
-    tasks.register(svc.name.toLowerCase(), GenerateTask) {
+    def generate = tasks.register("generate$svc.name", GenerateTask) {
         description "Generate a $project.name client for $svc.name."
         dependsOn 'clone'
+        dependsOn ':specs'
 
         // Current service being processed
         project.ext.serviceName = svc.name
 
         generatorName.set(project.ext.generator as String)
         inputSpec.set("$rootDir/schema/json/${svc.spec}Service-v${svc.version}.json")
-        outputDir.set("$buildDir/services/${svc.name.toLowerCase()}")
+        outputDir.set("$buildDir/services/${svc.id}")
         templateDir.set("$projectDir/repo/$project.ext.templates")
         validateSpec.set(false)
         skipValidateSpec.set(true)
@@ -49,15 +52,19 @@ project.ext.services.each { Service svc ->
             configFile.set("$projectDir/repo/$project.ext.configFile")
         }
     }
+    
+    tasks.register(svc.id) {
+        description "Base task for $svc.name."
+        dependsOn generate
+    }
 }
 
 tasks.register('services') {
     description 'Generate code for multiple services.'
-    dependsOn project.ext.services.collect { it.name.toLowerCase() }
-    dependsOn ':specs'
+    dependsOn project.ext.services.collect { it.id }
 }
 
-tasks.named('checkout', GenerateTask) {
+tasks.named('generateCheckout', GenerateTask) {
     inlineSchemaNameMappings.set([
             'DonationPaymentRequest_paymentMethod': 'CheckoutPaymentMethod',
             // For Go (old spec version?)
