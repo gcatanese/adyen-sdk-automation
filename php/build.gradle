@@ -4,9 +4,6 @@ plugins {
     id 'adyen.sdk-automation-conventions'
 }
 
-// Service renaming
-tasks.named 'legalentity', { project.ext.serviceName = 'LegalEntityManagement' }
-
 tasks.withType(GenerateTask).configureEach {
     modelPackage.set("Model\\${project.ext.serviceName}")
     apiPackage.set("Service\\${project.ext.serviceName}")
@@ -22,6 +19,7 @@ project.ext.services.each { Service svc ->
     def deploy = tasks.register("deploy$svc.name", Copy) {
         description "Copy $svc.name files into the repo."
         dependsOn "generate$svc.name"
+        outputs.upToDateWhen { false }
 
         into layout.projectDirectory.dir("repo/src/Adyen")
         def source = "services/$svc.id/lib"

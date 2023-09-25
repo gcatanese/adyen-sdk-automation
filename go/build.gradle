@@ -11,12 +11,14 @@ project.ext {
 }
 
 // Service renaming
-tasks.named('generatePOSTerminalManagement', GenerateTask) {
+tasks.named('generatePOSTerminalManagement') {
     project.ext.serviceName = 'PosTerminalManagementApi'
+}
+tasks.named('generateLegalEntityManagement') {
+    project.ext.serviceName = 'LegalEntity'
 }
 
 tasks.withType(GenerateTask).configureEach {
-    packageName.set(it.name)
     enablePostProcessFile.set(true)
     globalProperties.set([
             'apis'           : '',
@@ -33,15 +35,45 @@ tasks.withType(GenerateTask).configureEach {
 
 // Deployment
 project.ext.services.each { Service svc ->
+    def generateTask = "generate$svc.name" 
     def deploy = tasks.register("deploy$svc.name", Copy) {
         description "Copy $svc.name files into the repo."
-        dependsOn "generate$svc.name"
+        dependsOn generateTask 
+        outputs.upToDateWhen { false }
+
         from layout.buildDirectory.dir("services/$svc.id")
         include "**/*.go"
         into layout.projectDirectory.dir("repo/src/$svc.id")
     }
 
     tasks.named(svc.id) { dependsOn deploy }
+
+    tasks.named(generateTask, GenerateTask) {
+        packageName.set(svc.id)
+    }
+}
+
+tasks.named('generatePayment', GenerateTask) {
+    packageName.set('payments')
+}
+
+tasks.named('generateLegalEntityManagement', GenerateTask) {
+    packageName.set('legalentity')
+}
+
+tasks.named('deployLegalEntityManagement', Copy) {
+    into layout.projectDirectory.dir("repo/src/legalentity")
+}
+
+tasks.named('deployPayment', Copy) {
+    into layout.projectDirectory.dir("repo/src/payments")
+}
+
+// Small services don't need a "index"
+['BalanceControl', 'BinLookup', 'Recurring', 'DataProtection', 'StoredValue', 'POSTerminalManagement'].each {
+    tasks.named("deploy$it", Copy) {
+        exclude 'client.go'
+    }
 }
 
 // Services with a RestServiceError model
