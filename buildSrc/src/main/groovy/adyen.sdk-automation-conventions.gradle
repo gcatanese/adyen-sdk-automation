@@ -102,3 +102,10 @@ tasks.withType(GenerateTask).configureEach {
 tasks.register('clean', Delete) {
     delete buildDir
 }
+
+tasks.register('addPMTable', Copy) {
+    dependsOn("clone")
+    dependsOn(":pmTable")
+    from(rootProject.file('PaymentMethodOverview.md'))
+    into layout.projectDirectory.dir("repo")
+}

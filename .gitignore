@@ -6,6 +6,7 @@ build
 
 # OpenAPI specs
 schema
+PaymentMethodOverview.md
 
 # SDK upstream repository
 repo
