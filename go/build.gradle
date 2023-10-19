@@ -28,9 +28,6 @@ tasks.withType(GenerateTask).configureEach {
             'apiDocs'        : 'false',
             'modelDocs'      : 'false'
     ])
-    additionalProperties.set([
-            'serviceName': project.ext.serviceName,
-    ])
 }
 
 // Deployment
