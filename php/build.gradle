@@ -7,7 +7,7 @@ plugins {
 tasks.withType(GenerateTask).configureEach {
     modelPackage.set("Model\\${project.ext.serviceName}")
     apiPackage.set("Service\\${project.ext.serviceName}")
-    additionalProperties.set([
+    additionalProperties.putAll([
             'variableNamingConvention': 'camelCase',
             'invokerPackage'          : 'Adyen',
             'packageName'             : 'Adyen'
