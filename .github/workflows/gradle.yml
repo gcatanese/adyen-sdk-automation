@@ -1,15 +1,7 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
-name: Java CI with Gradle
+name: Update SDKs
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
   pull_request:
     branches: [ "main" ]
 
@@ -17,18 +9,42 @@ permissions:
   contents: read
 
 jobs:
-  build:
-
+  generate:
+    strategy:
+      matrix:
+        project: [ go, php, java, node, dotnet, python, ruby ]
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
         java-version: '11'
         distribution: 'temurin'
-    - name: Build with Gradle
+    - name: Clone ${{ matrix.project }} repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+        repository: Adyen/adyen-${{ matrix.project }}-api-library
+        path: ${{ matrix.project }}/repo
+    - name: Generate code for ${{ matrix.project }}
       uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
       with:
-        arguments: services
+        arguments: ${{ matrix.project }}:services
+    - name: Set PR variables
+      id: vars
+      run: |
+        cd schema
+        echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
+        echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
+          by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v5.0.2
+      with:
+        path: ${{ matrix.project }}/repo
+        token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+        committer: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
+        author: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
+        branch: sdk-automation/models
+        title: ${{ steps.vars.outputs.pr_title }}
+        body: ${{ steps.vars.outputs.pr_body }}

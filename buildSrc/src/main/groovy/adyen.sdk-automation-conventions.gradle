@@ -37,6 +37,7 @@ class Service {
     int version
 
     String getSpec() { spec ?: name }
+
     String getId() { name.toLowerCase() }
 }
 
@@ -67,7 +68,7 @@ project.ext.services.each { Service svc ->
             configFile.set("$projectDir/repo/$project.ext.configFile")
         }
     }
-    
+
     tasks.register(svc.id) {
         description "Base task for $svc.name."
         dependsOn generate
@@ -81,9 +82,8 @@ tasks.register('services') {
 
 tasks.named('generateCheckout', GenerateTask) {
     inlineSchemaNameMappings.set([
-            'DonationPaymentRequest_paymentMethod': 'CheckoutPaymentMethod',
-            // For Go (old spec version?)
-            'PaymentDonationRequest_paymentMethod': 'CheckoutPaymentMethod'
+            'PaymentRequest_paymentMethod'        : 'CheckoutPaymentMethod',
+            'DonationPaymentRequest_paymentMethod': 'DonationPaymentMethod',
     ])
 }
 
