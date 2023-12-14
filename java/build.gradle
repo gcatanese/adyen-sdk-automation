@@ -1,3 +1,79 @@
+import com.adyen.sdk.Service
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 plugins {
     id 'adyen.sdk-automation-conventions'
+}
+
+project.ext {
+    generator = 'java'
+}
+
+def services = project.ext.services as List<Service>
+def smallServices = project.ext.smallServices as List<Service>
+
+tasks.withType(GenerateTask).configureEach {
+    def serviceId = project.ext.serviceName.toLowerCase()
+    def modelNamespace = "com.adyen.model.${serviceId}"
+
+    library.set("jersey3")
+    modelPackage.set(modelNamespace.replace('/', '.'))
+    apiPackage.set("com.adyen.service.${serviceId}")
+    apiNameSuffix.set('Api')
+    additionalProperties.putAll([
+            'dateLibrary'    : 'java8',
+            'openApiNullable': 'false',
+    ])
+}
+
+smallServices.each { Service svc ->
+    tasks.named("generate${svc.name}", GenerateTask) {
+        configFile.set("$projectDir/config.yaml")
+        apiPackage.set("com.adyen.service")
+        additionalProperties.putAll([
+                'smallServiceName': "${svc.name}Api",
+        ])
+    }
+}
+
+// Deployment
+services.each { Service svc ->
+    def deploy = tasks.register("deploy$svc.name", Copy) {
+        group 'deploy'
+        description "Copy $svc.name files into the repo."
+        dependsOn "generate$svc.name"
+        outputs.upToDateWhen { false }
+
+        into layout.projectDirectory.dir("repo")
+
+        // models
+        def modelsPath = "src/main/java/com/adyen/model"
+        def modelSource = "services/$svc.id/${modelsPath}"
+        from(layout.buildDirectory.dir(modelSource)) {
+            include "**/*.java"
+            into modelsPath
+        }
+
+        // serializer
+        def servicePath = "src/main/java/com/adyen/service"
+        def serviceSource = "services/$svc.id/${servicePath}"
+        from(layout.buildDirectory.file("${serviceSource}/JSON.java")) {
+            into "${modelsPath}/${svc.id}"
+        }
+
+        // service
+        from(layout.buildDirectory.dir("${serviceSource}/$svc.id")) {
+            include "*.java"
+            into "${servicePath}/${svc.id}"
+        }
+
+        // small service
+        from(layout.buildDirectory.dir(serviceSource)) {
+            include "*Single.java"
+            into servicePath
+            rename { svc.name + "Api.java" }
+        }
+    }
+
+    tasks.named(svc.id) { dependsOn deploy }
 }

@@ -1,3 +1,4 @@
+import com.adyen.sdk.Service
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -8,14 +9,33 @@ project.ext {
     generator = 'go'
     templates = 'templates/custom'
     configFile = 'templates/config.yaml'
+    removeTags = false
 }
 
+def services = project.ext.services as List<Service>
+
 // Service renaming
-tasks.named('generatePOSTerminalManagement') {
+tasks.named('generatePosTerminalManagement', GenerateTask) {
     project.ext.serviceName = 'PosTerminalManagementApi'
+    additionalProperties.set([
+            'serviceName': 'PosTerminalManagementApi',
+    ])
 }
-tasks.named('generateLegalEntityManagement') {
+tasks.named('generateLegalEntityManagement', GenerateTask) {
     project.ext.serviceName = 'LegalEntity'
+    additionalProperties.set([
+            'serviceName': 'LegalEntity',
+    ])
+}
+tasks.named('generatePayout', GenerateTask) {
+    additionalProperties.set([
+            'serviceName': '',
+    ])
+}
+tasks.named('generatePayment', GenerateTask) {
+    additionalProperties.set([
+            'serviceName': '',
+    ])
 }
 
 tasks.withType(GenerateTask).configureEach {
@@ -31,11 +51,12 @@ tasks.withType(GenerateTask).configureEach {
 }
 
 // Deployment
-project.ext.services.each { Service svc ->
-    def generateTask = "generate$svc.name" 
+services.each { Service svc ->
+    def generateTask = "generate$svc.name"
     def deploy = tasks.register("deploy$svc.name", Copy) {
+        group 'deploy'
         description "Copy $svc.name files into the repo."
-        dependsOn generateTask 
+        dependsOn generateTask
         outputs.upToDateWhen { false }
 
         from layout.buildDirectory.dir("services/$svc.id")
@@ -58,6 +79,13 @@ tasks.named('generateLegalEntityManagement', GenerateTask) {
     packageName.set('legalentity')
 }
 
+// Rename webhooks
+services.findAll { it.name.endsWith('Webhooks') }.each { Service svc ->
+    def singular = svc.id.dropRight(1)
+    tasks.named("generate${svc.name}", GenerateTask) { packageName.set(singular) }
+    tasks.named("deploy${svc.name}", Copy) { into layout.projectDirectory.dir("repo/src/${singular}") }
+}
+
 tasks.named('deployLegalEntityManagement', Copy) {
     into layout.projectDirectory.dir("repo/src/legalentity")
 }
@@ -66,10 +94,10 @@ tasks.named('deployPayment', Copy) {
     into layout.projectDirectory.dir("repo/src/payments")
 }
 
-// Small services don't need a "index"
-['BalanceControl', 'BinLookup', 'Recurring', 'DataProtection', 'StoredValue', 'POSTerminalManagement'].each {
-    tasks.named("deploy$it", Copy) {
-        exclude 'client.go'
+// These don't need a "index"
+services.findAll({ it.small || it.name.endsWith('Webhooks') }).each { Service svc ->
+    tasks.named("deploy${svc.name}", Copy) {
+        exclude 'client.go', 'api_default.go'
     }
 }
 

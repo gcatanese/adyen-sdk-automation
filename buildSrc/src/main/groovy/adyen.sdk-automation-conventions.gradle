@@ -1,3 +1,10 @@
+plugins {
+    id 'org.openapi.generator'
+}
+
+import com.adyen.sdk.Service
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 repositories {
@@ -5,63 +12,66 @@ repositories {
     mavenCentral()
 }
 
+List<Service> services = [
+        // Payments
+        new Service(name: 'Checkout', version: 71),
+        new Service(name: 'Payout', version: 68),
+        new Service(name: 'Recurring', version: 68, small: true),
+        new Service(name: 'BinLookup', version: 54, small: true),
+        // Point of Sale
+        new Service(name: 'PosTerminalManagement', spec: 'TfmAPIService', version: 1, small: true),
+        // Management
+        new Service(name: 'Management', version: 3),
+        new Service(name: 'BalanceControl', version: 1, small: true),
+        // Adyen for Platforms
+        new Service(name: 'LegalEntityManagement', spec: 'LegalEntityService', version: 3),
+        new Service(name: 'BalancePlatform', version: 2),
+        new Service(name: 'Transfers', spec: 'TransferService', version: 4),
+        new Service(name: 'DataProtection', version: 1, small: true),
+        // Classic Payments
+        new Service(name: 'Payment', version: 68, small: true),
+        // Others
+        new Service(name: 'StoredValue', version: 46, small: true),
+        new Service(name: 'Disputes', spec: 'DisputeService', version: 30, small: true),
+        // Webhooks
+        new Service(name: 'ConfigurationWebhooks', spec: 'BalancePlatformConfigurationNotification', version: 1),
+        new Service(name: 'AcsWebhooks', spec: 'BalancePlatformAcsNotification', version: 1),
+        new Service(name: 'ReportWebhooks', spec: 'BalancePlatformReportNotification', version: 1),
+        new Service(name: 'TransferWebhooks', spec: 'BalancePlatformTransferNotification', version: 4),
+        new Service(name: 'TransactionWebhooks', spec: 'BalancePlatformTransactionNotification', version: 4),
+        new Service(name: 'ManagementWebhooks', spec: 'ManagementNotificationService', version: 3),
+]
+
 ext {
     generator = project.name
     templates = 'templates'
-    services = [
-            // Payments
-            new Service(name: 'Checkout', version: 71),
-            new Service(name: 'Payout', version: 68),
-            new Service(name: 'Recurring', version: 68),
-            new Service(name: 'BinLookup', version: 54),
-            // Point of Sale
-            new Service(name: 'POSTerminalManagement', spec: 'TfmAPIService', version: 1),
-            // Management
-            new Service(name: 'Management', version: 3),
-            new Service(name: 'BalanceControl', version: 1),
-            // Adyen for Platforms
-            new Service(name: 'LegalEntityManagement', spec: 'LegalEntityService', version: 3),
-            new Service(name: 'BalancePlatform', version: 2),
-            new Service(name: 'Transfers', spec: 'TransferService', version: 4),
-            new Service(name: 'DataProtection', version: 1),
-            // Classic Payments
-            new Service(name: 'Payment', version: 68),
-            // Others
-            new Service(name: 'StoredValue', version: 46),
-            // Webhooks
-            new Service(name: 'ConfigurationWebhook', spec: 'BalancePlatformConfigurationNotification', version: 1),
-            new Service(name: 'ACSWebhook', spec: 'BalancePlatformAcsNotification', version: 1),
-            new Service(name: 'ReportWebhook', spec: 'BalancePlatformReportNotification', version: 1),
-            new Service(name: 'TransferWebhook', spec: 'BalancePlatformTransferNotification', version: 4),
-            new Service(name: 'TransactionWebhook', spec: 'BalancePlatformTransactionNotification', version: 4),
-            new Service(name: 'ManagementWebhook', spec: 'ManagementNotificationService', version: 3),
-    ]
     serviceName = ''
-}
-
-class Service {
-    String name, spec
-    int version
-
-    String getSpec() { spec ?: "${name}Service" }
-
-    String getId() { name.toLowerCase() }
+    removeTags = true
+    setProperty('services', services)
+    smallServices = services.findAll { it.small }
+    serviceNaming = services.collectEntries { [it.id, it.name] }
+    serviceNamingCamel = services.collectEntries {
+        [it.id, it.name.substring(0, 1).toLowerCase() + it.name.substring(1)]
+    }
 }
 
 // Generate a full client for each service
-project.ext.services.each { Service svc ->
+services.each { Service svc ->
     def generate = tasks.register("generate$svc.name", GenerateTask) {
+        group 'generate'
         description "Generate a $project.name client for $svc.name."
-        dependsOn 'clone'
+        dependsOn 'cloneRepo'
         dependsOn ':specs'
 
         // Current service being processed
+        ext.serviceId = svc.id
         project.ext.serviceName = svc.name
 
         generatorName.set(project.ext.generator as String)
-        inputSpec.set("$rootDir/schema/json/${svc.spec}-v${svc.version}.json")
+        inputSpec.set("$rootDir/schema/json/${svc.filename}")
         outputDir.set("$buildDir/services/${svc.id}")
         templateDir.set("$projectDir/repo/$project.ext.templates")
+        engine.set('mustache')
         validateSpec.set(false)
         skipValidateSpec.set(true)
         reservedWordsMappings.set([
@@ -70,6 +80,10 @@ project.ext.services.each { Service svc ->
         additionalProperties.set([
                 'serviceName': project.ext.serviceName,
         ])
+        globalProperties.set([
+                'modelDocs' : 'false',
+                'modelTests': 'false'
+        ])
 
         if (project.ext.has('configFile')) {
             configFile.set("$projectDir/repo/$project.ext.configFile")
@@ -77,6 +91,7 @@ project.ext.services.each { Service svc ->
     }
 
     tasks.register(svc.id) {
+        group 'service'
         description "Base task for $svc.name."
         dependsOn generate
     }
@@ -84,17 +99,22 @@ project.ext.services.each { Service svc ->
 
 tasks.register('services') {
     description 'Generate code for multiple services.'
-    dependsOn project.ext.services.collect { it.id }
+    dependsOn services.collect { it.id }
 }
 
 tasks.named('generateCheckout', GenerateTask) {
+    if (project.name == 'node') {
+        // generator v5 does not support inlineSchemaNameMappings
+        return
+    }
     inlineSchemaNameMappings.set([
             'PaymentRequest_paymentMethod'        : 'CheckoutPaymentMethod',
             'DonationPaymentRequest_paymentMethod': 'DonationPaymentMethod',
     ])
 }
 
-tasks.register('clone', Exec) {
+tasks.register('cloneRepo', Exec) {
+    group 'setup'
     def uri = "https://github.com/Adyen/adyen-$project.name-api-library.git"
     def dest = 'repo'
     description "Clone this project's repository."
@@ -109,13 +129,51 @@ tasks.withType(GenerateTask).configureEach {
     outputs.cacheIf { false }
 }
 
-tasks.register('clean', Delete) {
-    delete buildDir
+tasks.register('cleanRepo', Delete) {
+    group 'clean'
+    description 'Clean this project state'
+    delete layout.buildDirectory
+    doLast {
+        exec {
+            // cleanTracked: discard changes to existing files
+            commandLine 'git', 'checkout', '.'
+            workingDir 'repo'
+        }
+        exec {
+            // cleanUntracked: discard unknown files
+            commandLine 'git', 'clean', '-f', '-d'
+            workingDir 'repo'
+        }
+    }
 }
 
 tasks.register('addPMTable', Copy) {
-    dependsOn("clone")
+    dependsOn("cloneRepo")
     dependsOn(":pmTable")
     from(rootProject.file('PaymentMethodOverview.md'))
     into layout.projectDirectory.dir("repo")
+}
+
+project.ext.smallServices.each { Service svc ->
+    def ungroup = tasks.register("ungroup${svc.name}") {
+        group 'specs'
+        description "Remove tags from ${svc.name}"
+        dependsOn ':specs'
+        // The `removeTags` setting only works in isolation (e.g. CI). Locally, specs are shared between all projects.
+        onlyIf { project.ext.removeTags }
+        doLast {
+            def specFile = file("$rootDir/schema/json/${svc.filename}")
+            def json = new JsonSlurper().parse(specFile)
+
+            json["paths"].each { Map.Entry endpoint ->
+                endpoint.value.each { Map.Entry httpMethod ->
+                    httpMethod.value.remove('tags')
+                }
+            }
+
+            specFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))
+        }
+    }
+
+    tasks.named("generate$svc.name") { dependsOn ungroup }
 }
