@@ -55,13 +55,15 @@ services.each { Service svc ->
         }
 
         // serializer
-        def servicePath = "src/main/java/com/adyen/service"
-        def serviceSource = "services/$svc.id/${servicePath}"
-        from(layout.buildDirectory.file("${serviceSource}/JSON.java")) {
+        def serializerPath = "src/main/java/com/adyen"
+        def serializerSource = "services/$svc.id/${serializerPath}"
+        from(layout.buildDirectory.file("${serializerSource}/JSON.java")) {
             into "${modelsPath}/${svc.id}"
         }
 
         // service
+        def servicePath = "src/main/java/com/adyen/service"
+        def serviceSource = "services/$svc.id/${servicePath}"
         from(layout.buildDirectory.dir("${serviceSource}/$svc.id")) {
             include "*.java"
             into "${servicePath}/${svc.id}"
