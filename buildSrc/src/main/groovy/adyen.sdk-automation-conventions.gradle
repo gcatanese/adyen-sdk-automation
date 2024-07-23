@@ -41,6 +41,7 @@ List<Service> services = [
         new Service(name: 'TransferWebhooks', spec: 'BalancePlatformTransferNotification', version: 4),
         new Service(name: 'TransactionWebhooks', spec: 'BalancePlatformTransactionNotification', version: 4),
         new Service(name: 'ManagementWebhooks', spec: 'ManagementNotificationService', version: 3),
+        new Service(name: 'PaymentsApp', spec: 'PaymentsAppService', version: 1),
 ]
 
 ext {
