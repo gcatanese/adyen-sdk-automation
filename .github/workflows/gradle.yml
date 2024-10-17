@@ -101,7 +101,7 @@ jobs:
         pwd
         ls -la
 
-        docker run -v "$(pwd):./" --rm openapitools/openapi-diff:2.0.1 \
+        docker run -v "$(pwd):." --rm openapitools/openapi-diff:2.0.1 \
           $LINK_BEFORE \
           $LINK_AFTER \
           --markdown markdown.md
