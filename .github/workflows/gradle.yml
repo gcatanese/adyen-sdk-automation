@@ -91,8 +91,9 @@ jobs:
           echo "link_before: $temp_before_name"
           echo "link_after: $temp_before_name"
         done
+        
         BASE_PATH=$(pwd)
-        echo "BASE_PATH=$BASE_PATH >> $GITHUB_ENV
+        echo "BASE_PATH=$BASE_PATH" >> $GITHUB_ENV
         echo "LINK_BEFORE=$file_paths_before" >> $GITHUB_ENV
         echo "LINK_AFTER=$file_paths_after" >> $GITHUB_ENV
         echo "base path $BASE_PATH"
