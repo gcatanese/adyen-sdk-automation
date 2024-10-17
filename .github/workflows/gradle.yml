@@ -32,7 +32,7 @@ jobs:
     - name: Clone ${{ matrix.project }} repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: 2
+        fetch-depth: 0
         # token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
         repository: gcatanese/adyen-${{ matrix.project }}-api-library
         path: ${{ matrix.project }}/repo
