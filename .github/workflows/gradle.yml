@@ -52,11 +52,12 @@ jobs:
           COMMIT_HASH=$(git rev-parse HEAD)
           echo "rev-parse is $(git rev-parse HEAD)"
           echo "rev-parse is $COMMIT_HASH"
+           echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
     - name: Echo list of files changed in the commit
       id: files_changed
       run: |
-        echo "Files updated in the commit:"
+        echo "Files updated in the commit: $COMMIT_HASH"
         git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
         git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files_changed.txt
           
