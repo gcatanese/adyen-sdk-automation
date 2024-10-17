@@ -138,23 +138,38 @@ jobs:
     #     commit-message: |
     #       ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
      
+    # - name: Create Pull Request
+    #   run: |
+    #     git config user.name "Beppe Catanese"
+    #     git config user.email "actions@github.com"
+    #     git checkout -b new-feature-branch
+    #     git push origin new-feature-branch
+
+    # - name: Read markdown file and create PR
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run: |
+    #     # Read the markdown file content
+    #     CHANGELOG_CONTENT=$(cat ${{ env.BASE_PATH }}/markdown-${{ env.COMMIT_HASH }}.md)
+
+    #     # Create a pull request with "What has changed" and content from the markdown file
+    #     gh pr create \
+    #       --title "New Feature" \
+    #       --body "### What has changed\n\n${CHANGELOG_CONTENT}" \
+    #       --head new-feature-branch \
+    #       --base main
+
     - name: Create Pull Request
-      run: |
-        git config user.name "Beppe Catanese"
-        git config user.email "gcatanese@yahoo.com"
-        git checkout -b new-feature-branch
-        git push origin new-feature-branch
+      id: cpr
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: Update report
+        #committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+        #author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+        branch: example-patches
+        delete-branch: true
+        title: '[Example] Update report'
+        body: |
+            Update report
 
-    - name: Read markdown file and create PR
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # Read the markdown file content
-        CHANGELOG_CONTENT=$(cat ${{ env.BASE_PATH }}/markdown-${{ env.COMMIT_HASH }}.md)
-
-        # Create a pull request with "What has changed" and content from the markdown file
-        gh pr create \
-          --title "New Feature" \
-          --body "### What has changed\n\n${CHANGELOG_CONTENT}" \
-          --head new-feature-branch \
-          --base main
+            $(cat ${{ env.BASE_PATH }}/markdown-${{ env.COMMIT_HASH }}.md)
