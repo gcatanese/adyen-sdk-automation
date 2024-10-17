@@ -98,13 +98,19 @@ jobs:
         cd schema
         echo "$LINK_BEFORE"
         echo "$LINK_AFTER"
-        pwd
-        ls -la
 
         docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
           /specs/json_before.json \
           /specs/json_after.json \
           --markdown markdown.md
+
+        pwd
+        ls -la
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: my-artifact
+        path: markdown.md
         
     # - name: Run OpenAPI Diff (from HEAD revision)
     #   uses: mvegter/openapi-diff-action@v0.23.5
