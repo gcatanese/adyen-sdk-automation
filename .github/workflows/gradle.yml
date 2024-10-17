@@ -68,13 +68,22 @@ jobs:
         # Loop through each file and generate the before/after links
         for file in $files; do
           # Create links to the file before and after the commit
-          link_before="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file"
-          link_after="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file"
+          link_before+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file\n"
+          link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
 
           echo "link_before: $link_before"
           echo "link_after: $link_after"
         done
+        echo "::set-output name=link_before::$link_before"
+        echo "::set-output name=link_after::$link_after"
 
+    - name: Use links in next step
+      run: |
+        echo "Links before the commit:"
+        echo "${{ steps.vars.outputs.link_before }}"
+        
+        echo "Links after the commit:"
+        echo "${{ steps.vars.outputs.link_after }}"
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
     #   with:
