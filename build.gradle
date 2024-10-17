@@ -1,7 +1,7 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-def uri = "https://github.com/Adyen/adyen-openapi.git"
+def uri = "https://github.com/gcatanese/adyen-openapi.git"
 def specsDir = "$projectDir/schema"
 def checkoutDir = "$projectDir/schema/json/CheckoutService-v71.json"
 
