@@ -49,6 +49,19 @@ jobs:
         echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
+          echo "rev-parse is $(git rev-parse HEAD)"
+          COMMIT_HASH=${{ github.event.inputs.commit_hash }}
+          echo "Commit hash is $COMMIT_HASH"
+          FILE_PATH=${{ github.event.inputs.file_path }}
+          echo "File path is $FILE_PATH"
+
+    - name: Echo list of files changed in the commit
+      id: files_changed
+      run: |
+        echo "Files updated in the commit:"
+        git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
+        git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files_changed.txt
+          
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
     #   with:
