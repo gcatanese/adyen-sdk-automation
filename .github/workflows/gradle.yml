@@ -137,3 +137,24 @@ jobs:
     #     body: ${{ steps.vars.outputs.pr_body }}
     #     commit-message: |
     #       ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
+     
+    - name: Create Pull Request
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git checkout -b new-feature-branch
+        git push origin new-feature-branch
+
+    - name: Read markdown file and create PR
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Read the markdown file content
+        CHANGELOG_CONTENT=$(cat ${{ env.BASE_PATH }}/markdown-${{ env.COMMIT_HASH }}.md)
+
+        # Create a pull request with "What has changed" and content from the markdown file
+        gh pr create \
+          --title "New Feature" \
+          --body "### What has changed\n\n${CHANGELOG_CONTENT}" \
+          --head new-feature-branch \
+          --base main
