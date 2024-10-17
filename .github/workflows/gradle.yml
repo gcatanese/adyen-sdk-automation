@@ -59,7 +59,22 @@ jobs:
         echo "$output"
         # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
         # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files_changed.txt
-          
+
+        # Get the list of files changed in the commit
+        files=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
+
+        echo "Files updated in the commit: $files"
+
+        # Loop through each file and generate the before/after links
+        for file in $files; do
+          # Create links to the file before and after the commit
+          link_before="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file"
+          link_after="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file"
+
+          echo "link_before: $link_before"
+          echo "link_after: $link_after"
+        done
+
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
     #   with:
