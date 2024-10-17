@@ -19,7 +19,8 @@ jobs:
   generate:
     strategy:
       matrix:
-        project: [ go ]
+        # project: [ go, php, java, node, dotnet, python, ruby ]
+        project: [ node ]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
