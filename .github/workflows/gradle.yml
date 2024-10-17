@@ -41,7 +41,7 @@ jobs:
       if: matrix.project == 'node'
       run: cp ${{ matrix.project }}/gradle.properties buildSrc
     - name: Generate code for ${{ matrix.project }}
-      run: ./gradlew ${{ matrix.project }}:services
+      run: ./gradlew ${{ matrix.project }}:checkout
     - name: Set PR variables
       id: vars
       run: |
@@ -49,11 +49,9 @@ jobs:
         echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
+          COMMIT_HASH=$(git rev-parse HEAD)
           echo "rev-parse is $(git rev-parse HEAD)"
-          COMMIT_HASH=${{ github.event.inputs.commit_hash }}
-          echo "Commit hash is $COMMIT_HASH"
-          FILE_PATH=${{ github.event.inputs.file_path }}
-          echo "File path is $FILE_PATH"
+          echo "rev-parse is $COMMIT_HASH"
 
     - name: Echo list of files changed in the commit
       id: files_changed
