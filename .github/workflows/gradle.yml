@@ -52,13 +52,11 @@ jobs:
           COMMIT_HASH=$(git rev-parse HEAD)
           echo "rev-parse is $(git rev-parse HEAD)"
           echo "rev-parse is $COMMIT_HASH"
-        commit_details=$(git show $COMMIT_HASH)
-        echo "$commit_details"
         echo "Files updated in the commit: $COMMIT_HASH"
-        git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
-        git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files_changed.txt
         output=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
         echo "$output"
+        # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
+        # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files_changed.txt
           
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
