@@ -70,14 +70,23 @@ jobs:
           # Create links to the file before and after the commit
           #link_before+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file\n"
           #link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
-          link_before+="$file\n"
-          link_after+="$file\n"
+          #link_before+="$file\n"
+          temp_before_name="temp_before_name_$file"
+          git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
+          echo "File checked out to: $temp_before_name"
+          
+          temp_after_name="temp_after_name_$file"
+          git show $COMMIT_HASH:$file > $temp_after_name
+          echo "File checked out to: $temp_after_name"
+
+          file_paths_before+="$temp_before_name\n"
+          file_paths_after+="$temp_before_name\n"
       
-          echo "link_before: $link_before"
-          echo "link_after: $link_after"
+          echo "link_before: $temp_before_name"
+          echo "link_after: $temp_before_name"
         done
-        echo "LINK_BEFORE=$link_before" >> $GITHUB_ENV
-        echo "LINK_AFTER=$link_after" >> $GITHUB_ENV
+        echo "LINK_BEFORE=$file_paths_before" >> $GITHUB_ENV
+        echo "LINK_AFTER=$file_paths_after" >> $GITHUB_ENV
         
 
     - name: Use links in next step
