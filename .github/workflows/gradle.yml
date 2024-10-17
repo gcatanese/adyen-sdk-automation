@@ -100,12 +100,17 @@ jobs:
         echo "$LINK_AFTER"
         pwd
         ls -la
+
+        docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.0.1 \
+          $LINK_BEFORE \
+          $LINK_AFTER \
+          --markdown markdown.md
         
-    - name: Run OpenAPI Diff (from HEAD revision)
-      uses: mvegter/openapi-diff-action@v0.23.5
-      with:
-        head-spec: $LINK_BEFORE
-        base-spec: $LINK_AFTER
+    # - name: Run OpenAPI Diff (from HEAD revision)
+    #   uses: mvegter/openapi-diff-action@v0.23.5
+    #   with:
+    #     head-spec: $LINK_BEFORE
+    #     base-spec: $LINK_AFTER
         
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
