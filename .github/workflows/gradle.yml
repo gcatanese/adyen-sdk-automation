@@ -54,7 +54,7 @@ jobs:
           echo "rev-parse is $COMMIT_HASH"
           COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
           echo "rev-parse-before is $COMMIT_HASH_BEFORE"
-        echo "Files updated in the commit: $COMMIT_HASH_BEFORE"
+        echo "Files updated in the commit: $COMMIT_HASH"
         output=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
         echo "$output"
         # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
@@ -71,11 +71,12 @@ jobs:
           #link_before+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file\n"
           #link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
           #link_before+="$file\n"
-          temp_before_name="temp_before_name_$file"
+          temp_before_name="temp_before_name" #"temp_before_name_$file"
+          echo "temp_before_name: $temp_before_name"
           git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
           echo "File checked out to: $temp_before_name"
           
-          temp_after_name="temp_after_name_$file"
+          temp_after_name="temp_after_name" #"temp_after_name_$file"
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
