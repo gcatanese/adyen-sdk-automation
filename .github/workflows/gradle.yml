@@ -80,8 +80,8 @@ jobs:
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
-          file_paths_before+="$temp_before_name\n"
-          file_paths_after+="$temp_before_name\n"
+          file_paths_before+="$temp_before_name"
+          file_paths_after+="$temp_before_name"
       
           echo "link_before: $temp_before_name"
           echo "link_after: $temp_before_name"
@@ -94,6 +94,7 @@ jobs:
       run: |
         echo "$LINK_BEFORE"
         echo "$LINK_AFTER"
+        ls -la
         
     - name: Run OpenAPI Diff (from HEAD revision)
       uses: mvegter/openapi-diff-action@v0.23.5
