@@ -50,9 +50,10 @@ jobs:
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
           COMMIT_HASH=$(git rev-parse HEAD)
-          echo "rev-parse is $(git rev-parse HEAD)"
           echo "rev-parse is $COMMIT_HASH"
-        echo "Files updated in the commit: $COMMIT_HASH"
+          COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+          echo "rev-parse-before is $COMMIT_HASH_BEFORE"
+        echo "Files updated in the commit: $COMMIT_HASH_BEFORE"
         output=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
         echo "$output"
         # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
