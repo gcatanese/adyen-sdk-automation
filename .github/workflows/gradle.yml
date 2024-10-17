@@ -102,8 +102,8 @@ jobs:
         ls -la
 
         docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.0.1 \
-          /specs/json_before.json \
-          /specs/json_after.json \
+          json_before.json \
+          json_after.json \
           --markdown markdown.md
         
     # - name: Run OpenAPI Diff (from HEAD revision)
