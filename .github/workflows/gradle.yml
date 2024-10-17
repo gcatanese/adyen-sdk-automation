@@ -74,16 +74,21 @@ jobs:
           echo "link_before: $link_before"
           echo "link_after: $link_after"
         done
-        echo "::set-output name=link_before::$link_before"
-        echo "::set-output name=link_after::$link_after"
+        echo "LINK_BEFORE=$link_before" >> $GITHUB_ENV
+        echo "LINK_AFTER=$link_after" >> $GITHUB_ENV
+        
 
     - name: Use links in next step
       run: |
-        echo "Links before the commit:"
-        echo "${{ steps.vars.outputs.link_before }}"
+        echo "$LINK_BEFORE"
+        echo "$LINK_AFTER"
         
-        echo "Links after the commit:"
-        echo "${{ steps.vars.outputs.link_after }}"
+    - name: Run OpenAPI Diff (from HEAD revision)
+      uses: mvegter/openapi-diff-action@v0.23.5
+      with:
+        head-spec: $LINK_BEFORE
+        base-spec: $LINK_AFTER
+        
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
     #   with:
