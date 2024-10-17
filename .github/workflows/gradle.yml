@@ -140,8 +140,8 @@ jobs:
      
     - name: Create Pull Request
       run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
+        git config user.name "Beppe Catanese"
+        git config user.email "gcatanese@yahoo.com"
         git checkout -b new-feature-branch
         git push origin new-feature-branch
 
