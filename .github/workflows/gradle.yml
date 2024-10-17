@@ -19,7 +19,7 @@ jobs:
   generate:
     strategy:
       matrix:
-        project: [ go, php, java, node, dotnet, python, ruby ]
+        project: [ go ]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -31,8 +31,8 @@ jobs:
     - name: Clone ${{ matrix.project }} repository
       uses: actions/checkout@v4
       with:
-        token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
-        repository: Adyen/adyen-${{ matrix.project }}-api-library
+        # token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+        repository: gcatanese/adyen-${{ matrix.project }}-api-library
         path: ${{ matrix.project }}/repo
     - name: Setup Gradle
       uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
@@ -48,15 +48,15 @@ jobs:
         echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
-      with:
-        path: ${{ matrix.project }}/repo
-        token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
-        committer: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
-        author: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
-        branch: sdk-automation/models
-        title: ${{ steps.vars.outputs.pr_title }}
-        body: ${{ steps.vars.outputs.pr_body }}
-        commit-message: |
-          ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
+    #   with:
+    #     path: ${{ matrix.project }}/repo
+    #     token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+    #     committer: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
+    #     author: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
+    #     branch: sdk-automation/models
+    #     title: ${{ steps.vars.outputs.pr_title }}
+    #     body: ${{ steps.vars.outputs.pr_body }}
+    #     commit-message: |
+    #       ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
