@@ -71,12 +71,12 @@ jobs:
           #link_before+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file\n"
           #link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
           #link_before+="$file\n"
-          temp_before_name="temp_before_name" #"temp_before_name_$file"
+          temp_before_name=$(pwd)/temp_before_name_$file"
           echo "temp_before_name: $temp_before_name"
           git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
           echo "File checked out to: $temp_before_name"
           
-          temp_after_name="temp_after_name" #"temp_after_name_$file"
+          temp_after_name=$(pwd)/"temp_after_name_$file"
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
@@ -93,6 +93,7 @@ jobs:
 
     - name: Use links in next step
       run: |
+        cd schema
         echo "$LINK_BEFORE"
         echo "$LINK_AFTER"
         pwd
