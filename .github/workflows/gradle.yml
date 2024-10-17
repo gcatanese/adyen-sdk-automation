@@ -88,12 +88,14 @@ jobs:
         done
         echo "LINK_BEFORE=$file_paths_before" >> $GITHUB_ENV
         echo "LINK_AFTER=$file_paths_after" >> $GITHUB_ENV
-        
+        pwd
+        ls -la
 
     - name: Use links in next step
       run: |
         echo "$LINK_BEFORE"
         echo "$LINK_AFTER"
+        pwd
         ls -la
         
     - name: Run OpenAPI Diff (from HEAD revision)
