@@ -105,7 +105,7 @@ jobs:
 
     - name: Use links in next step
       run: |
-        cd schema
+        cd schema/json
         echo "$LINK_BEFORE"
         echo "$LINK_AFTER"
 
