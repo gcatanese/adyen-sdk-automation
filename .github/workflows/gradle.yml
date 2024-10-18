@@ -46,7 +46,7 @@ jobs:
     - name: Set PR variables
       id: vars
       run: |
-        cd schema
+        cd schema/json
         echo pr_title="Update the services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
@@ -102,8 +102,8 @@ jobs:
         # pwd
         # ls -la
         # cd json
-        # pwd
-        # ls -la
+        pwd
+        ls -la
 
     - name: Use links in next step
       run: |
@@ -124,8 +124,8 @@ jobs:
           echo "$after"
           
           docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
-            /specs$before \
-            /specs$after \
+            /specs/$before \
+            /specs/$after \
             --markdown /specs/markdown-$COMMIT_HASH.md \
             --debug  --info
 
