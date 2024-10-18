@@ -74,22 +74,22 @@ jobs:
           #link_before+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file\n"
           #link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
           #link_before+="$file\n"
-          #temp_before_name="$(pwd)/temp_before_name_$file"
-          temp_before_name="$(pwd)/${file##*.}_before.json"
+          #temp_before_name="$(pwd)/json/temp_before_name_$file"
+          temp_before_name="$(pwd)/json/${file##*.}_before.json"
           echo "temp_before_name: $temp_before_name"
           git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
           echo "File checked out to: $temp_before_name"
           
-          # temp_after_name="$(pwd)/temp_after_name_$file"
-          temp_after_name="$(pwd)/${file##*.}_after.json"
+          # temp_after_name="$(pwd)/json/temp_after_name_$file"
+          temp_after_name="$(pwd)/json/${file##*.}_after.json"
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
           file_paths_before+="$temp_before_name"
-          file_paths_after+="$temp_before_name"
+          file_paths_after+="$temp_after_name"
       
           echo "link_before: $temp_before_name"
-          echo "link_after: $temp_before_name"
+          echo "link_after: $temp_after_name"
         done
         
         BASE_PATH=$(pwd)
@@ -99,6 +99,9 @@ jobs:
         echo "base path $BASE_PATH"
         pwd
         ls -la
+        cd json
+        pwd
+        ls -la
 
     - name: Use links in next step
       run: |
@@ -106,10 +109,15 @@ jobs:
         echo "$LINK_BEFORE"
         echo "$LINK_AFTER"
 
-        docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
-          /specs/json_before.json \
-          /specs/json_after.json \
-          --markdown /specs/markdown-$COMMIT_HASH.md
+        for (( i=0; i<$length; i++ )); do
+          before="${LINK_BEFORE[$i]}"
+          after="${LINK_AFTER[$i]}"
+          docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
+            /specs/$before \
+            /specs/$after \
+            --markdown /specs/markdown-$COMMIT_HASH.md
+
+        done
 
         pwd
         ls -la
