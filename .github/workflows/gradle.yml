@@ -130,8 +130,8 @@ jobs:
         echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD)). \
-          ## OpenAPI diffs \
-          Check OpenAPI diffs ${{ steps.artifact-upload-step.outputs.artifact-url }} " >> "$GITHUB_OUTPUT"
+             \
+          Download [OpenAPI diffs](${{ steps.artifact-upload-step.outputs.artifact-url }}) to view the changes." >> "$GITHUB_OUTPUT"
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
       with:
@@ -143,5 +143,11 @@ jobs:
         branch: sdk-automation/models
         title: ${{ steps.vars.outputs.pr_title }}
         body: ${{ steps.vars.outputs.pr_body }}
+        # body: |
+        #     OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) by 
+        #     [commit](https://github.com/Adyen/adyen-openapi/commit/$COMMIT_HASH).
+            
+        #     Download [OpenAPI diffs](${{ steps.artifact-upload-step.outputs.artifact-url }}) to view the changes.
+  
         commit-message: |
           ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
