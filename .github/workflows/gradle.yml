@@ -47,7 +47,7 @@ jobs:
       id: vars
       run: |
         cd schema
-        echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
+        echo pr_title="Update the services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
           COMMIT_HASH=$(git rev-parse HEAD)
