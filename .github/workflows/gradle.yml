@@ -88,7 +88,7 @@ jobs:
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
-          file_names+="$temp_before_name"
+          file_names+="$file_name"
           file_paths_before+="$temp_before_name"
           file_paths_after+="$temp_after_name"
       
@@ -124,7 +124,7 @@ jobs:
           before="${LINK_BEFORE[$i]}"
           after="${LINK_AFTER[$i]}"
           filename="${FILE_NAMES[$i]}"
-          markdown="openapidiff-${filename//\//_}.md"
+          markdown="${filename//\//_}.md"
 
           echo "$before"
           echo "$after"
@@ -150,7 +150,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: my-artifact
+        name: OpenAPI Diffs (commit ${{ env.COMMIT_HASH }}
         path: ${{ env.BASE_PATH }}/${{ env.MARKDOWN }}
         
     # - name: Run OpenAPI Diff (from HEAD revision)
