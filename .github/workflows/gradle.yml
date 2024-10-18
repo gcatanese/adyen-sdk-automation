@@ -124,7 +124,7 @@ jobs:
           before="${LINK_BEFORE[$i]}"
           after="${LINK_AFTER[$i]}"
           filename="${FILE_NAMES[$i]}"
-          markdown="${openapidiff-$filename-$COMMIT_HASH.md//\//_}"
+          markdown="openapidiff-${filename//\//_}-$COMMIT_HASH.md"
 
           echo "$before"
           echo "$after"
