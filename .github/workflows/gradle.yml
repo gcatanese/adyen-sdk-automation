@@ -75,13 +75,15 @@ jobs:
           #link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
           #link_before+="$file\n"
           #temp_before_name="$(pwd)/json/temp_before_name_$file"
-          temp_before_name="$(pwd)/json/${file##*.}_before.json"
+          #temp_before_name="$(pwd)/json/${file##*.}_before.json"
+          temp_before_name="${file##*.}_before.json"
           echo "temp_before_name: $temp_before_name"
           git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
           echo "File checked out to: $temp_before_name"
           
           # temp_after_name="$(pwd)/json/temp_after_name_$file"
-          temp_after_name="$(pwd)/json/${file##*.}_after.json"
+          #temp_after_name="$(pwd)/json/${file##*.}_after.json"
+          temp_after_name="${file##*.}_after.json"
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
