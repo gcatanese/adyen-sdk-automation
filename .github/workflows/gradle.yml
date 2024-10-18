@@ -32,8 +32,8 @@ jobs:
     - name: Clone ${{ matrix.project }} repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
-        # token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+        #token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+        #repository: Adyen/adyen-${{ matrix.project }}-api-library
         repository: gcatanese/adyen-${{ matrix.project }}-api-library
         path: ${{ matrix.project }}/repo
     - name: Setup Gradle
@@ -42,61 +42,40 @@ jobs:
       if: matrix.project == 'node'
       run: cp ${{ matrix.project }}/gradle.properties buildSrc
     - name: Generate code for ${{ matrix.project }}
+      #run: ./gradlew ${{ matrix.project }}:services
       run: ./gradlew ${{ matrix.project }}:checkout
-    - name: Set PR variables
-      id: vars
+    - name: Fetch modified files
+      id: fetch-files
       run: |
         cd schema
-        echo pr_title="Update the services" >> "$GITHUB_OUTPUT"
-        echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
-          by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
-          # COMMIT_HASH=$(git rev-parse HEAD)
-          # COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
-          COMMIT_HASH="07d07d2d23197f0b92175635116e857bcdceb1b4"
-          COMMIT_HASH_BEFORE="b4c0540a70e10612b628c4acf20cc6f53e9cdf76"
-          echo "rev-parse is $COMMIT_HASH"
-          echo "rev-parse-before is $COMMIT_HASH_BEFORE"
-        echo "COMMIT_HASH: $COMMIT_HASH"
-        output=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
-        echo "$output"
-
+        # COMMIT_HASH=$(git rev-parse HEAD)
+        # COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+        COMMIT_HASH="07d07d2d23197f0b92175635116e857bcdceb1b4"
+        COMMIT_HASH_BEFORE="b4c0540a70e10612b628c4acf20cc6f53e9cdf76"
+        
+        # save commit that has triggered the OpenAPI generation
         echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
-        # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH
-        # git diff-tree --no-commit-id --name-only -r $COMMIT_HASH > files_changed.txt
-
-        # Get the list of files changed in the commit
+        # Fetch files modified by the commit
         files=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
 
-        echo "Files updated in the commit: $files"
-
-        # Loop through each file and generate the before/after links
         for file in $files; do
-          # Create links to the file before and after the commit
-          #link_before+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH_BEFORE/$file\n"
-          #link_after+="https://github.com/gcatanese/adyen-openapi/blob/$COMMIT_HASH/$file\n"
-          #link_before+="$file\n"
-          #temp_before_name="$(pwd)/json/temp_before_name_$file"
-          #temp_before_name="$(pwd)/json/${file##*.}_before.json"
+          # get filename
           file_name="${file%.*}"
+          # checkout file before the commit
           temp_before_name="${file_name}_before.json"
-          echo "temp_before_name: $temp_before_name"
           git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
-          echo "File checked out to: $temp_before_name"
+          echo "checkout file before the commit: $temp_before_name"
           
-          # temp_after_name="$(pwd)/json/temp_after_name_$file"
-          #temp_after_name="$(pwd)/json/${file##*.}_after.json"
+          # checkout file after the commit
           temp_after_name="${file_name}_after.json"
           git show $COMMIT_HASH:$file > $temp_after_name
-          echo "File checked out to: $temp_after_name"
+          echo "checkout file after the commit: $temp_after_name"
 
+          # build list to use in next step
           file_names+="$file_name "
           file_paths_before+="$temp_before_name "
-          file_paths_after+="$temp_after_name "
-      
-          # echo "file_name: $file_name"
-          # echo "link_before: $temp_before_name"
-          # echo "link_after: $temp_after_name"
+          file_paths_after+="$temp_after_name "      
         done
         
         BASE_PATH=$(pwd)
@@ -105,38 +84,30 @@ jobs:
         echo "LINK_BEFORE=$file_paths_before" >> $GITHUB_ENV
         echo "LINK_AFTER=$file_paths_after" >> $GITHUB_ENV
         echo "base path $BASE_PATH"
-        # pwd
-        # ls -la
-        # cd json
-        pwd
-        ls -la
 
-    - name: Use links in next step
+    - name: OpenAPI diffs
+      id: openapi-diffs
       run: |
         cd schema
-        echo "$FILE_NAMES"
-        echo "$LINK_BEFORE"
-        echo "$LINK_AFTER"
+        #echo "$FILE_NAMES"
+        #echo "$LINK_BEFORE"
+        #echo "$LINK_AFTER"
 
-        pwd
-        ls -la
-        ls json -la
-
+        # convert strings to arrays
         befores=($LINK_BEFORE)
         afters=($LINK_AFTER)
         filenames=($FILE_NAMES)
         
         length=${#befores[@]}
-        
+
+        # process each file
         for (( i=0; i<length; i++ )); do
           before="${befores[$i]}"
           after="${afters[$i]}"
           filename="${filenames[$i]}"
           markdown="openapi_diff_${filename//\//_}.md"
-
-          echo "$before"
-          echo "$after"
           
+          # generate markdown
           docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
             /specs/$before \
             /specs/$after \
@@ -145,76 +116,31 @@ jobs:
 
         done
 
-        pwd
-        ls -la
-        markdown_content=$(cat $markdown)
-          
-        echo "MARKDOWN=$markdown" >> $GITHUB_ENV
-        
-        # Set the content as an output for later steps
-        echo "markdown_content<<EOF" >> $GITHUB_ENV
-        echo "$markdown_content" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-
+    # upload OpenAPI diffs as artifacts       
     - uses: actions/upload-artifact@v4
+      id: artifact-upload-step
       with:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
-        # path: ${{ env.BASE_PATH }}/${{ env.MARKDOWN }}
         path: ${{ env.BASE_PATH }}/**/openapi_diff_*
-        
-    # - name: Run OpenAPI Diff (from HEAD revision)
-    #   uses: mvegter/openapi-diff-action@v0.23.5
-    #   with:
-    #     head-spec: $LINK_BEFORE
-    #     base-spec: $LINK_AFTER
-        
-    # - name: Create Pull Request
-    #   uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
-    #   with:
-    #     path: ${{ matrix.project }}/repo
-    #     token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
-    #     committer: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
-    #     author: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
-    #     branch: sdk-automation/models
-    #     title: ${{ steps.vars.outputs.pr_title }}
-    #     body: ${{ steps.vars.outputs.pr_body }}
-    #     commit-message: |
-    #       ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
-     
-    # - name: Create Pull Request
-    #   run: |
-    #     git config user.name "Beppe Catanese"
-    #     git config user.email "actions@github.com"
-    #     git checkout -b new-feature-branch
-    #     git push origin new-feature-branch
-
-    # - name: Read markdown file and create PR
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   run: |
-    #     # Read the markdown file content
-    #     CHANGELOG_CONTENT=$(cat ${{ env.BASE_PATH }}/markdown-${{ env.COMMIT_HASH }}.md)
-
-    #     # Create a pull request with "What has changed" and content from the markdown file
-    #     gh pr create \
-    #       --title "New Feature" \
-    #       --body "### What has changed\n\n${CHANGELOG_CONTENT}" \
-    #       --head new-feature-branch \
-    #       --base main
-
+      
+    - name: Set PR variables
+      id: vars
+      run: |
+        cd schema
+        echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
+        echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
+          by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD)). \ 
+          \
+          Check OpenAPI diffs ${{ steps.artifact-upload-step.outputs.artifact-url }} " >> "$GITHUB_OUTPUT"
     - name: Create Pull Request
-      id: cpr
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
       with:
-        token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
         path: ${{ matrix.project }}/repo
-        commit-message: Update report
-        #committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-        #author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
-        branch: example-patches
-        delete-branch: true
-        title: '[Example] Update report'
-        body: |
-            Update report
-
-            ${{ env.markdown_content }}
+        #token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
+        #committer: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
+        #author: ${{ secrets.ADYEN_AUTOMATION_BOT_EMAIL }}
+        branch: sdk-automation/models
+        title: ${{ steps.vars.outputs.pr_title }}
+        body: ${{ steps.vars.outputs.pr_body }}
+        commit-message: |
+          ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
