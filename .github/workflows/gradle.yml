@@ -124,7 +124,7 @@ jobs:
           before="${LINK_BEFORE[$i]}"
           after="${LINK_AFTER[$i]}"
           filename="${FILE_NAMES[$i]}"
-          markdown="/specs/openapidiff-$filename-$COMMIT_HASH.md"
+          markdown="${openapidiff-$filename-$COMMIT_HASH.md//\//_}"
 
           echo "$before"
           echo "$after"
@@ -132,7 +132,7 @@ jobs:
           docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
             /specs/$before \
             /specs/$after \
-            --markdown $markdown \
+            --markdown /spec/$markdown \
             --info
 
         done
