@@ -113,7 +113,7 @@ jobs:
 
         pwd
         ls -la
-        markdown_content=$(cat /specs/markdown-$COMMIT_HASH.md)
+        markdown_content=$(cat markdown-$COMMIT_HASH.md)
           
         # Set the content as an output for later steps
         echo "markdown_content<<EOF" >> $GITHUB_ENV
