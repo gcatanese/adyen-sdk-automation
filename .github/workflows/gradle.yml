@@ -163,6 +163,7 @@ jobs:
       id: cpr
       uses: peter-evans/create-pull-request@v7
       with:
+        token: ${{ secrets.ADYEN_AUTOMATION_BOT_ACCESS_TOKEN }}
         path: ${{ matrix.project }}/repo
         commit-message: Update report
         #committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
