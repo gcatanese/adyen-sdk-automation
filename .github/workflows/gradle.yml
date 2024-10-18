@@ -90,13 +90,13 @@ jobs:
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
-          file_names+="$file_name"
-          file_paths_before+="$temp_before_name"
-          file_paths_after+="$temp_after_name"
+          file_names+="$file_name "
+          file_paths_before+="$temp_before_name "
+          file_paths_after+="$temp_after_name "
       
-          echo "file_name: $file_name"
-          echo "link_before: $temp_before_name"
-          echo "link_after: $temp_after_name"
+          # echo "file_name: $file_name"
+          # echo "link_before: $temp_before_name"
+          # echo "link_after: $temp_after_name"
         done
         
         BASE_PATH=$(pwd)
@@ -114,8 +114,9 @@ jobs:
     - name: Use links in next step
       run: |
         cd schema
-        #echo "$LINK_BEFORE"
-        #echo "$LINK_AFTER"
+        echo "$FILE_NAMES"
+        echo "$LINK_BEFORE"
+        echo "$LINK_AFTER"
 
         pwd
         ls -la
