@@ -132,7 +132,7 @@ jobs:
           before="${befores[$i]}"
           after="${afters[$i]}"
           filename="${filenames[$i]}"
-          markdown="${filename//\//_}.md"
+          markdown="openapi_diff_${filename//\//_}.md"
 
           echo "$before"
           echo "$after"
@@ -159,7 +159,8 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
-        path: ${{ env.BASE_PATH }}/${{ env.MARKDOWN }}
+        # path: ${{ env.BASE_PATH }}/${{ env.MARKDOWN }}
+        path: ${{ env.BASE_PATH }}/**/openapi_diff_*
         
     # - name: Run OpenAPI Diff (from HEAD revision)
     #   uses: mvegter/openapi-diff-action@v0.23.5
