@@ -122,12 +122,16 @@ jobs:
         ls -la
         ls json -la
 
-        length=${#LINK_BEFORE[@]}
+        befores=($LINK_BEFORE)
+        afters=($LINK_AFTER)
+        filenames=($FILE_NAMES)
+        
+        length=${#befores[@]}
         
         for (( i=0; i<length; i++ )); do
-          before="${LINK_BEFORE[$i]}"
-          after="${LINK_AFTER[$i]}"
-          filename="${FILE_NAMES[$i]}"
+          before="${befores[$i]}"
+          after="${afters[$i]}"
+          filename="${filenames[$i]}"
           markdown="${filename//\//_}.md"
 
           echo "$before"
