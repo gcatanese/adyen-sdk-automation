@@ -76,26 +76,30 @@ jobs:
           #link_before+="$file\n"
           #temp_before_name="$(pwd)/json/temp_before_name_$file"
           #temp_before_name="$(pwd)/json/${file##*.}_before.json"
-          temp_before_name="${file##*.}_before.json"
+          file_name="${file%.*}"
+          temp_before_name="${file_name}_before.json"
           echo "temp_before_name: $temp_before_name"
           git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
           echo "File checked out to: $temp_before_name"
           
           # temp_after_name="$(pwd)/json/temp_after_name_$file"
           #temp_after_name="$(pwd)/json/${file##*.}_after.json"
-          temp_after_name="${file##*.}_after.json"
+          temp_after_name="${file_name}_after.json"
           git show $COMMIT_HASH:$file > $temp_after_name
           echo "File checked out to: $temp_after_name"
 
+          file_names+="$temp_before_name"
           file_paths_before+="$temp_before_name"
           file_paths_after+="$temp_after_name"
       
+          echo "file_name: $file_name"
           echo "link_before: $temp_before_name"
           echo "link_after: $temp_after_name"
         done
         
         BASE_PATH=$(pwd)
         echo "BASE_PATH=$BASE_PATH" >> $GITHUB_ENV
+        echo "FILE_NAMES=$file_names" >> $GITHUB_ENV
         echo "LINK_BEFORE=$file_paths_before" >> $GITHUB_ENV
         echo "LINK_AFTER=$file_paths_after" >> $GITHUB_ENV
         echo "base path $BASE_PATH"
@@ -119,6 +123,8 @@ jobs:
         for (( i=0; i<length; i++ )); do
           before="${LINK_BEFORE[$i]}"
           after="${LINK_AFTER[$i]}"
+          filename="${FILE_NAMES[$i]}"
+          markdown="/specs/openapidiff-$filename-$COMMIT_HASH.md"
 
           echo "$before"
           echo "$after"
@@ -126,15 +132,17 @@ jobs:
           docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
             /specs/$before \
             /specs/$after \
-            --markdown /specs/markdown-$COMMIT_HASH.md \
-            --debug  --info
+            --markdown $markdown \
+            --info
 
         done
 
         pwd
         ls -la
-        markdown_content=$(cat markdown-$COMMIT_HASH.md)
+        markdown_content=$(cat $markdown)
           
+        echo "MARKDOWN=$markdown" >> $GITHUB_ENV
+        
         # Set the content as an output for later steps
         echo "markdown_content<<EOF" >> $GITHUB_ENV
         echo "$markdown_content" >> $GITHUB_ENV
@@ -143,7 +151,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: my-artifact
-        path: ${{ env.BASE_PATH }}/markdown-${{ env.COMMIT_HASH }}.md
+        path: ${{ env.BASE_PATH }}/${{ env.MARKDOWN }}
         
     # - name: Run OpenAPI Diff (from HEAD revision)
     #   uses: mvegter/openapi-diff-action@v0.23.5
