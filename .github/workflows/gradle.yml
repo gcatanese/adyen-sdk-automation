@@ -97,21 +97,27 @@ jobs:
         echo "LINK_BEFORE=$file_paths_before" >> $GITHUB_ENV
         echo "LINK_AFTER=$file_paths_after" >> $GITHUB_ENV
         echo "base path $BASE_PATH"
-        pwd
-        ls -la
-        cd json
-        pwd
-        ls -la
+        # pwd
+        # ls -la
+        # cd json
+        # pwd
+        # ls -la
 
     - name: Use links in next step
       run: |
         cd schema/json
-        echo "$LINK_BEFORE"
-        echo "$LINK_AFTER"
+        #echo "$LINK_BEFORE"
+        #echo "$LINK_AFTER"
 
+        length=${#LINK_BEFORE[@]}
+        
         for (( i=0; i<length; i++ )); do
           before="${LINK_BEFORE[$i]}"
           after="${LINK_AFTER[$i]}"
+
+          echo "$before"
+          echo "$after"
+          
           docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
             /specs/$before \
             /specs/$after \
