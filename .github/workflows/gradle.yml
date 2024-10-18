@@ -50,9 +50,11 @@ jobs:
         echo pr_title="Update the services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
-          COMMIT_HASH=$(git rev-parse HEAD)
+          # COMMIT_HASH=$(git rev-parse HEAD)
+          # COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+          COMMIT_HASH=07d07d2d23197f0b92175635116e857bcdceb1b4
+          COMMIT_HASH_BEFORE=b4c0540a70e10612b628c4acf20cc6f53e9cdf76
           echo "rev-parse is $COMMIT_HASH"
-          COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
           echo "rev-parse-before is $COMMIT_HASH_BEFORE"
         echo "COMMIT_HASH: $COMMIT_HASH"
         output=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
@@ -150,7 +152,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: OpenAPI Diffs (commit ${{ env.COMMIT_HASH }}
+        name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
         path: ${{ env.BASE_PATH }}/${{ env.MARKDOWN }}
         
     # - name: Run OpenAPI Diff (from HEAD revision)
