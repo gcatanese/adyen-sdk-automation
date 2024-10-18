@@ -46,7 +46,7 @@ jobs:
     - name: Set PR variables
       id: vars
       run: |
-        cd schema/json
+        cd schema
         echo pr_title="Update the services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD))." >> "$GITHUB_OUTPUT"
@@ -54,7 +54,7 @@ jobs:
           echo "rev-parse is $COMMIT_HASH"
           COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
           echo "rev-parse-before is $COMMIT_HASH_BEFORE"
-        echo "Files updated in the commit: $COMMIT_HASH"
+        echo "COMMIT_HASH: $COMMIT_HASH"
         output=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
         echo "$output"
 
