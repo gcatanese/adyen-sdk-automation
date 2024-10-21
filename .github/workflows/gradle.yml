@@ -60,22 +60,26 @@ jobs:
         files=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
 
         for file in $files; do
-          # get filename
-          file_name="${file%.*}"
-          # checkout file before the commit
-          temp_before_name="${file_name}_before.json"
-          git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
-          echo "checkout file before the commit: $temp_before_name"
-          
-          # checkout file after the commit
-          temp_after_name="${file_name}_after.json"
-          git show $COMMIT_HASH:$file > $temp_after_name
-          echo "checkout file after the commit: $temp_after_name"
-
-          # build list to use in next step
-          file_names+="$file_name "
-          file_paths_before+="$temp_before_name "
-          file_paths_after+="$temp_after_name "      
+          if [[ $file == *.json ]]; then
+            # get filename
+            file_name="${file%.*}"
+            # checkout file before the commit
+            temp_before_name="${file_name}_before.json"
+            git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
+            echo "checkout file before the commit: $temp_before_name"
+            
+            # checkout file after the commit
+            temp_after_name="${file_name}_after.json"
+            git show $COMMIT_HASH:$file > $temp_after_name
+            echo "checkout file after the commit: $temp_after_name"
+  
+            # build list to use in next step
+            file_names+="$file_name "
+            file_paths_before+="$temp_before_name "
+            file_paths_after+="$temp_after_name "      
+          else
+            echo "Skipping non-JSON file: $file"
+          fi
         done
         
         BASE_PATH=$(pwd)
