@@ -141,7 +141,7 @@ jobs:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
         path: |
           ${{ env.BASE_PATH }}/**/openapi_diff_*
-          ${{ env.BASE_PATH }}/**/oas_diff_diff_*
+          ${{ env.BASE_PATH }}/**/oas_diff_*
       
     - name: Set PR variables
       id: vars
