@@ -77,8 +77,6 @@ jobs:
             file_names+="$file_name "
             file_paths_before+="$temp_before_name "
             file_paths_after+="$temp_after_name "      
-          else
-            echo "Skipping non-JSON file: $file"
           fi
         done
         
@@ -116,7 +114,7 @@ jobs:
             /specs/$before \
             /specs/$after \
             --markdown /specs/$markdown \
-            --info
+            --trace
 
         done
 
