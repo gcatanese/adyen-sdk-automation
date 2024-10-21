@@ -126,7 +126,7 @@ jobs:
           markdown="oas_diff_${filename//\//_}.md"
           
           docker run --rm -t tufin/oasdiff changelog \
-            -f markdown \
+            -f markup \
             /specs/$before \
             /specs/$after \
             -e output_to_file=markdown
