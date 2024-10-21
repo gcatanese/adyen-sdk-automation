@@ -113,8 +113,7 @@ jobs:
           docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
             /specs/$before \
             /specs/$after \
-            --markdown /specs/$markdown \
-            --debug
+            --markdown /specs/$markdown
 
         done
 
