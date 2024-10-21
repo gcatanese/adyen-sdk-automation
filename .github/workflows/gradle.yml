@@ -48,10 +48,10 @@ jobs:
       id: fetch-files
       run: |
         cd schema
-        # COMMIT_HASH=$(git rev-parse HEAD)
-        # COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
-        COMMIT_HASH="07d07d2d23197f0b92175635116e857bcdceb1b4"
-        COMMIT_HASH_BEFORE="b4c0540a70e10612b628c4acf20cc6f53e9cdf76"
+        COMMIT_HASH=$(git rev-parse HEAD)
+        COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+        # COMMIT_HASH="07d07d2d23197f0b92175635116e857bcdceb1b4"
+        # COMMIT_HASH_BEFORE="b4c0540a70e10612b628c4acf20cc6f53e9cdf76"
         
         # save commit that has triggered the OpenAPI generation
         echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
