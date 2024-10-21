@@ -48,10 +48,10 @@ jobs:
       id: fetch-files
       run: |
         cd schema
-        # COMMIT_HASH=$(git rev-parse HEAD)
-        # COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
-        COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
-        COMMIT_HASH_BEFORE="07d07d2d23197f0b92175635116e857bcdceb1b4"
+        COMMIT_HASH=$(git rev-parse HEAD)
+        COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+        # COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
+        # COMMIT_HASH_BEFORE="07d07d2d23197f0b92175635116e857bcdceb1b4"
         
         # save commit that has triggered the OpenAPI generation
         echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
@@ -102,21 +102,21 @@ jobs:
         
         length=${#befores[@]}
 
-        # openapi-diff changes
-        for (( i=0; i<length; i++ )); do
-          before="${befores[$i]}"
-          after="${afters[$i]}"
-          filename="${filenames[$i]}"
-          markdown="openapi_diff_${filename//\//_}.md"
+        # # openapi-diff changes
+        # for (( i=0; i<length; i++ )); do
+        #   before="${befores[$i]}"
+        #   after="${afters[$i]}"
+        #   filename="${filenames[$i]}"
+        #   markdown="openapi_diff_${filename//\//_}.md"
           
-          # generate markdown
-          docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
-            /specs/$before \
-            /specs/$after \
-            --markdown /specs/$markdown \
-            --off
+        #   # generate markdown
+        #   docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
+        #     /specs/$before \
+        #     /specs/$after \
+        #     --markdown /specs/$markdown \
+        #     --off
 
-        done
+        # done
 
         # oasdiff changes
         for (( i=0; i<length; i++ )); do
@@ -125,7 +125,7 @@ jobs:
           filename="${filenames[$i]}"
           markdown="oas_diff_${filename//\//_}.md"
           
-          docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff changelog \
+          docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff diff \
             -f markup \
             /specs/$before \
             /specs/$after \
@@ -139,7 +139,7 @@ jobs:
       with:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
         path: |
-          ${{ env.BASE_PATH }}/**/openapi_diff_*
+          # ${{ env.BASE_PATH }}/**/openapi_diff_*
           ${{ env.BASE_PATH }}/**/oas_diff_*
       
     - name: Set PR variables
