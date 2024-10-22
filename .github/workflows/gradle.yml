@@ -113,6 +113,9 @@ jobs:
         commit-message: |
           ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
 
+  openapi-diff:
+    runs-on: ubuntu-latest
+    steps:
     - name: OpenAPI diffs
       id: openapi-diffs
       run: |
