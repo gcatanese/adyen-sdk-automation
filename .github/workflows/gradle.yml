@@ -52,7 +52,9 @@ jobs:
         COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
         # COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
         # COMMIT_HASH_BEFORE="07d07d2d23197f0b92175635116e857bcdceb1b4"
-        
+
+        echo "Generate OpenAPI diff between commits [$COMMIT_HASH_BEFORE, $COMMIT_HASH]"            
+
         # save commit that has triggered the OpenAPI generation
         echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
@@ -71,7 +73,7 @@ jobs:
             temp_after_name="${filename}_after.json"
             git show $COMMIT_HASH:$file > $temp_after_name
 
-            echo "OpenAPI diff for $filename between commits [$COMMIT_HASH_BEFORE:$COMMIT_HASH]"            
+            echo "Processing $filename"            
             docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff diff \
               -f markup \
               /specs/$temp_before_name \
