@@ -73,12 +73,12 @@ jobs:
             temp_after_name="${filename}_after.json"
             git show $COMMIT_HASH:$file > $temp_after_name
 
-            echo "Processing $filename"            
             docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff diff \
               -f markup \
               /specs/$temp_before_name \
               /specs/$temp_after_name \
               >> "oas_diff_${filename//\//_}.md"
+            echo "$filename ✅"            
 
           fi
         done
