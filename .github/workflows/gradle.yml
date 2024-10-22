@@ -44,8 +44,8 @@ jobs:
     - name: Generate code for ${{ matrix.project }}
       #run: ./gradlew ${{ matrix.project }}:services
       run: ./gradlew ${{ matrix.project }}:checkout
-    - name: Generate OpenAPI diffs
-      id: openapi-diff
+    - name: OpenAPI diffs
+      id: openapi-diffs
       run: |
         cd schema
         COMMIT_HASH=$(git rev-parse HEAD)
