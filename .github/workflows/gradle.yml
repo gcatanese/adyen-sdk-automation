@@ -47,6 +47,7 @@ jobs:
     - name: Generate OpenAPI diffs
       id: openapi-diff
       run: |
+        cd schema
         COMMIT_HASH=$(git rev-parse HEAD)
         COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
         # COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
@@ -132,7 +133,7 @@ jobs:
       with:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
         path: |
-          **/oas_diff_*.md
+          schema/oas_diff_*.md
       
     - name: Set PR variables
       id: vars
