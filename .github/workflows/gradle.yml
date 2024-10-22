@@ -48,11 +48,10 @@ jobs:
       id: openapi-diffs
       run: |
         cd schema
-        #COMMIT_HASH=$(git rev-parse HEAD)
-        #COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
-        COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
+        COMMIT_HASH=$(git rev-parse HEAD)
+        COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+        #COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
         #COMMIT_HASH_BEFORE="07d07d2d23197f0b92175635116e857bcdceb1b4"
-        COMMIT_HASH_BEFORE="fa8048c5825279b378393fa012de99157c560039"
 
         echo "Generate OpenAPI diff between commits [$COMMIT_HASH_BEFORE, $COMMIT_HASH]"            
 
