@@ -136,7 +136,7 @@ jobs:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
         path: |
           schema/oas_diff_*.md
-      
+        overwrite: true
     - name: Set PR variables
       id: vars
       run: |
