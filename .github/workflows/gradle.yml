@@ -44,44 +44,6 @@ jobs:
     - name: Generate code for ${{ matrix.project }}
       #run: ./gradlew ${{ matrix.project }}:services
       run: ./gradlew ${{ matrix.project }}:checkout
-    - name: OpenAPI diffs
-      id: openapi-diffs
-      run: |
-        cd schema
-        COMMIT_HASH=$(git rev-parse HEAD)
-        COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
-        #COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
-        #COMMIT_HASH_BEFORE="07d07d2d23197f0b92175635116e857bcdceb1b4"
-
-        echo "Generate OpenAPI diff between commits [$COMMIT_HASH_BEFORE, $COMMIT_HASH]"            
-
-        # save commit that has triggered the OpenAPI generation
-        echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
-
-        # Fetch files modified by the commit
-        files=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
-
-        for file in $files; do
-          if [[ $file == *.json ]]; then
-            # get filename
-            filename="${file%.*}"
-            # checkout file before the commit
-            temp_before_name="${filename}_before.json"
-            git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
-            
-            # checkout file after the commit
-            temp_after_name="${filename}_after.json"
-            git show $COMMIT_HASH:$file > $temp_after_name
-
-            docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff diff \
-              -f markup \
-              /specs/$temp_before_name \
-              /specs/$temp_after_name \
-              >> "oas_diff_${filename//\//_}.md"
-            echo "$filename ✅"            
-
-          fi
-        done
         
     # - name: OpenAPI diffs
     #   id: openapi-diffs
@@ -129,15 +91,6 @@ jobs:
 
         # done
 
-    # upload generated openapi-diff markdowns as artifacts       
-    - uses: actions/upload-artifact@v4
-      if: matrix.project == 'java'
-      id: artifact-upload-step
-      with:
-        name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
-        path: |
-          schema/oas_diff_*.md
-        
     - name: Set PR variables
       id: vars
       run: |
@@ -159,3 +112,51 @@ jobs:
         body: ${{ steps.vars.outputs.pr_body }}
         commit-message: |
           ${{ contains(fromJSON('["go", "php", "node"]'), matrix.project) && '[reformat]' }}[adyen-sdk-automation] automated change
+
+    - name: OpenAPI diffs
+      id: openapi-diffs
+      run: |
+        cd schema
+        COMMIT_HASH=$(git rev-parse HEAD)
+        COMMIT_HASH_BEFORE=$(git rev-parse HEAD^)
+        #COMMIT_HASH="fa8048c5825279b378393fa012de99157c560039"
+        #COMMIT_HASH_BEFORE="07d07d2d23197f0b92175635116e857bcdceb1b4"
+
+        echo "Generate OpenAPI diff between commits [$COMMIT_HASH_BEFORE, $COMMIT_HASH]"            
+
+        # save commit that has triggered the OpenAPI generation
+        echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+
+        # Fetch files modified by the commit
+        files=$(git diff-tree --no-commit-id --name-only -r $COMMIT_HASH)
+
+        for file in $files; do
+          if [[ $file == *.json ]]; then
+            # get filename
+            filename="${file%.*}"
+            # checkout file before the commit
+            temp_before_name="${filename}_before.json"
+            git show $COMMIT_HASH_BEFORE:$file > $temp_before_name
+            
+            # checkout file after the commit
+            temp_after_name="${filename}_after.json"
+            git show $COMMIT_HASH:$file > $temp_after_name
+
+            docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff diff \
+              -f markup \
+              /specs/$temp_before_name \
+              /specs/$temp_after_name \
+              >> "oas_diff_${filename//\//_}.md"
+            echo "$filename ✅"            
+
+          fi
+        done
+    # upload generated openapi-diff markdowns as artifacts       
+    - uses: actions/upload-artifact@v4
+      id: artifact-upload-step
+      with:
+        name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
+        path: |
+          schema/oas_diff_*.md
+        
+          
