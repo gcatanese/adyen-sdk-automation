@@ -131,6 +131,7 @@ jobs:
 
     # upload generated openapi-diff markdowns as artifacts       
     - uses: actions/upload-artifact@v4
+      if: matrix.project == 'java'
       id: artifact-upload-step
       with:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
