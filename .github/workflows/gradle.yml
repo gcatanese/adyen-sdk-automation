@@ -38,9 +38,9 @@ jobs:
         path: ${{ matrix.project }}/repo
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v3
-    - name: Override properties
-      if: matrix.project == 'node'
-      run: cp ${{ matrix.project }}/gradle.properties buildSrc
+    # - name: Override properties
+    #   if: matrix.project == 'node'
+    #   run: cp ${{ matrix.project }}/gradle.properties buildSrc
     - name: Generate code for ${{ matrix.project }}
       #run: ./gradlew ${{ matrix.project }}:services
       run: ./gradlew ${{ matrix.project }}:checkout
