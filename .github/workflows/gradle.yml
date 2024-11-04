@@ -83,52 +83,6 @@ jobs:
           fi
         done
         
-    # - name: OpenAPI diffs
-    #   id: openapi-diffs
-    #   run: |
-    #     cd schema
-    #     #echo "$FILE_NAMES"
-    #     #echo "$LINK_BEFORE"
-    #     #echo "$LINK_AFTER"
-
-    #     # convert strings to arrays
-    #     befores=($LINK_BEFORE)
-    #     afters=($LINK_AFTER)
-    #     filenames=($FILE_NAMES)
-        
-    #     length=${#befores[@]}
-
-        # # openapi-diff changes
-        # for (( i=0; i<length; i++ )); do
-        #   before="${befores[$i]}"
-        #   after="${afters[$i]}"
-        #   filename="${filenames[$i]}"
-        #   markdown="openapi_diff_${filename//\//_}.md"
-          
-        #   # generate markdown
-        #   docker run -v "$(pwd):/specs" --rm openapitools/openapi-diff:2.1.0-beta.11 \
-        #     /specs/$before \
-        #     /specs/$after \
-        #     --markdown /specs/$markdown \
-        #     --off
-
-        # done
-
-        # # oasdiff changes
-        # for (( i=0; i<length; i++ )); do
-        #   before="${befores[$i]}"
-        #   after="${afters[$i]}"
-        #   filename="${filenames[$i]}"
-        #   markdown="oas_diff_${filename//\//_}.md"
-          
-        #   docker run -v "$(pwd):/specs" --rm -t tufin/oasdiff diff \
-        #     -f markup \
-        #     /specs/$before \
-        #     /specs/$after \
-        #     >> $markdown
-
-        # done
-
     # upload generated openapi-diff markdowns as artifacts       
     - uses: actions/upload-artifact@v4
       # only for first project (the artifact is always the same)
