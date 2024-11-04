@@ -19,8 +19,8 @@ jobs:
   generate:
     strategy:
       matrix:
-        # project: [ go, php, java, node, dotnet, python, ruby ]
-        project: [ node, java, ruby ]
+        # project: [ java, go, php, node, dotnet, python, ruby ]
+        project: [ java, node, ruby ]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -131,12 +131,21 @@ jobs:
 
     # upload generated openapi-diff markdowns as artifacts       
     - uses: actions/upload-artifact@v4
+      # only for first project (the artifact is always the same)
       if: matrix.project == 'java'
       id: artifact-upload-step
       with:
         name: openapi-diff files (commit ${{ env.COMMIT_HASH }})
         path: |
           schema/oas_diff_*.md
+
+    - name: Save artifact URL
+      # only for first project (the artifact is always the same)
+      if: matrix.project == 'java'
+      env:
+        REPO: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+      run: echo "ARTIFACT_URL=https://github.com/$REPO/actions/runs/$RUN_ID" >> $GITHUB_ENV
         
     - name: Set PR variables
       id: vars
@@ -145,7 +154,7 @@ jobs:
         echo pr_title="Update all services" >> "$GITHUB_OUTPUT"
         echo pr_body="OpenAPI spec or templates produced changes on $(date +%d-%m-%Y) \
           by [commit](https://github.com/Adyen/adyen-openapi/commit/$(git rev-parse HEAD)). \
-          Download [OpenAPI diffs](${{ steps.artifact-upload-step.outputs.artifact-url }}) to view the changes." >> "$GITHUB_OUTPUT"
+          Download [OpenAPI diffs](${{ env.ARTIFACT_URL }}) to view the changes." >> "$GITHUB_OUTPUT"
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
       with:
