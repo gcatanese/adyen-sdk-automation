@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         # project: [ java, go, php, node, dotnet, python, ruby ]
-        project: [ java, node, ruby ]
+        project: [ node, ruby, java ]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
