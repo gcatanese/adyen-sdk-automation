@@ -37,7 +37,7 @@ jobs:
         repository: gcatanese/adyen-${{ matrix.project }}-api-library
         path: ${{ matrix.project }}/repo
     - name: Setup Gradle
-      uses: gradle/gradle-build-action@v3
+      uses: gradle/actions/setup-gradle@v4
     # - name: Override properties
     #   if: matrix.project == 'node'
     #   run: cp ${{ matrix.project }}/gradle.properties buildSrc
